@@ -1,0 +1,46 @@
+{
+    "name": "tandrezone/nmcli-php",
+    "version": "1.0.0",
+    "description": "A comprehensive PHP wrapper for NetworkManager's nmcli command-line tool",
+    "type": "library",
+    "keywords": [
+        "networkmanager",
+        "nmcli",
+        "network",
+        "wifi",
+        "linux",
+        "networking"
+    ],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Tiago",
+            "email": "your-email@example.com"
+        }
+    ],
+    "require": {
+        "php": ">=7.4"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^9.0|^10.0|^11.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Tandrezone\\NmcliPhp\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tandrezone\\NmcliPhp\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "test": "phpunit",
+        "test-coverage": "phpunit --coverage-html coverage"
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}
