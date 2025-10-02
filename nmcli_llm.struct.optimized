@@ -1,0 +1,61 @@
+# NMCLI PHP - LLM Reference
+# tandrezone/nmcli-php | PHP 7.4+ | Pure OOP wrapper for NetworkManager nmcli
+
+## CLASSES
+
+### Nmcli - Main Controller
+new Nmcli($useSudo=true)
+
+Connections: getConnections():Connection[], getConnection($name):Connection|null, show($conn=null):array, up/down/delete($conn):bool, add($type,$name,$opts=[]):bool, modify($conn,$opts):bool, clone($orig,$new):bool, reload/load/import/export():bool
+Devices: getDevices():Device[], getDevice($name):Device|null, connectDevice/disconnectDevice($dev):bool
+WiFi: getWifiNetworks($dev=null):WifiNetwork[], connectWifi($ssid,$pwd=null,$dev=null):bool, createHotspot($ssid,$pwd=null,$dev=null):bool
+Utils: getLastOutput():array, getLastReturnCode():int, setUseSudo/isUsingSudo($bool):bool
+
+### Connection - Network Connection Object
+Magic: $conn->NAME/UUID/TYPE/DEVICE/STATE, isset($conn->prop)
+Info: getName/getUuid/getType/getDevice/getState():string, isActive():bool, get($key), has($key):bool
+Control: up/down/delete():bool, modify($opts):bool, clone($name):bool, export($file):bool, show():array, refresh(), getEditCommand():string
+Utils: toArray():array, __toString():string
+
+### Device - Network Device Object  
+Magic: $dev->DEVICE/TYPE/STATE/CONNECTION, isset($dev->prop)
+Info: getName/getType/getState/getConnection():string, isConnected/isAvailable/isWifi/isEthernet():bool, get($key), has($key):bool
+Control: connect($net,$pwd=null):bool, disconnect():bool, getWifiNetworks():WifiNetwork[]
+Utils: toArray():array, __toString():string
+
+### WifiNetwork - WiFi Network Object
+Magic: $net->SSID/BSSID/MODE/CHAN/FREQ/RATE/SIGNAL/BARS/SECURITY/CC, isset($net->prop)
+Info: getSsid/getBssid/getChannel/getFrequency/getSecurity():string, getSignal():int, get($key), has($key):bool
+Signal: getSignalQuality():string, hasStrongSignal(>=70%)/hasGoodSignal(>=50%)/hasWeakSignal(<30%):bool
+Security: isSecured/isOpen/isWpa/isWep():bool
+Control: connect($pwd=null):bool
+Utils: toArray():array, __toString():string
+
+### NmcliException extends \Exception
+
+## USAGE
+```php
+$nmcli = new Nmcli();
+
+// Connections
+$conns = $nmcli->getConnections();
+$conn = $nmcli->getConnection('WiFi');
+$conn->up(); $conn->down(); $conn->modify(['ipv4.method'=>'manual']); $conn->delete();
+
+// Devices  
+$devs = $nmcli->getDevices();
+$dev = array_filter($devs, fn($d)=>$d->isWifi())[0];
+$dev->connect('NetworkName');
+
+// WiFi
+$nets = $nmcli->getWifiNetworks();
+$net = array_filter($nets, fn($n)=>$n->SSID==='Home'&&$n->hasStrongSignal())[0];
+$net->connect('password');
+```
+
+## KEY NOTES
+- Pure OOP, no array methods
+- All exceptions: NmcliException
+- Magic props: $obj->PROPERTY
+- Signal: 0-100%, States: activated/connected/disconnected
+- Types: wifi/ethernet, Security: WPA2/WEP/-- (open)

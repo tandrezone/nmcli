@@ -74,29 +74,82 @@ class Nmcli
     }
 
     /**
-     * Get all connections as objects
+     * Get all connections as Connection objects
      */
     public function getConnections()
     {
         try {
             $output = $this->executeCommand("--mode multiline con show");
-            return $this->parseOutput($output);
+            $connectionsData = $this->parseOutput($output);
+            $connections = [];
+            foreach ($connectionsData as $connectionData) {
+                $connections[] = new Connection($connectionData, $this);
+            }
+            return $connections;
         } catch (NmcliException $e) {
             return [];
         }
     }
 
     /**
-     * Get all devices as objects
+     * Get a single connection by name
+     * 
+     * @param string $connectionName
+     * @return Connection|null
+     */
+    public function getConnection($connectionName)
+    {
+        try {
+            $output = $this->executeCommand("--mode multiline con show " . escapeshellarg($connectionName));
+            $connectionData = $this->parseOutput($output);
+            
+            if (!empty($connectionData)) {
+                return new Connection($connectionData[0], $this);
+            }
+            
+            return null;
+        } catch (NmcliException $e) {
+            return null;
+        }
+    }
+
+    /**
+     * Get all devices as Device objects
+     * 
+     * @return Device[]
      */
     public function getDevices()
     {
         try {
             $output = $this->executeCommand("--mode multiline dev status");
-            return $this->parseOutput($output);
+            $devicesData = $this->parseOutput($output);
+            
+            $devices = [];
+            foreach ($devicesData as $deviceData) {
+                $devices[] = new Device($deviceData, $this);
+            }
+            
+            return $devices;
         } catch (NmcliException $e) {
             return [];
         }
+    }
+
+    /**
+     * Get a single device by name
+     * 
+     * @param string $deviceName
+     * @return Device|null
+     */
+    public function getDevice($deviceName)
+    {
+        $devices = $this->getDevices();
+        foreach ($devices as $device) {
+            if ($device->getName() === $deviceName) {
+                return $device;
+            }
+        }
+        return null;
     }
 
     /**
@@ -344,18 +397,28 @@ class Nmcli
     }
 
     /**
-     * Get WiFi networks
+     * Get WiFi networks as WifiNetwork objects
+     * 
+     * @param string|null $device Device name to scan with
+     * @return WifiNetwork[]
      */
     public function getWifiNetworks($device = null)
     {
-        $command = "--mode multiline dev wifi list";
-        if ($device) {
-            $command .= " ifname " . escapeshellarg($device);
-        }
-        
         try {
+            $command = "--mode multiline dev wifi list";
+            if ($device) {
+                $command .= " ifname " . escapeshellarg($device);
+            }
+            
             $output = $this->executeCommand($command);
-            return $this->parseOutput($output);
+            $networksData = $this->parseOutput($output);
+            
+            $networks = [];
+            foreach ($networksData as $networkData) {
+                $networks[] = new WifiNetwork($networkData, $this, $device);
+            }
+            
+            return $networks;
         } catch (NmcliException $e) {
             return [];
         }

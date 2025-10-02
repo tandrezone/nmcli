@@ -5,6 +5,32 @@ All notable changes to `nmcli-php` will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - 2025-10-02
+
+### Added
+- **Connection Class**: Introduced `Connection` object class for representing individual network connections
+- Object-oriented connection management with methods like `up()`, `down()`, `modify()`, `delete()` directly on connection objects
+- `getConnection($name)` method to retrieve a specific connection by name as a `Connection` object
+- `getConnectionsData()` method for backward compatibility (returns raw arrays)
+- Connection object features:
+  - Property accessors: `getName()`, `getType()`, `getDevice()`, `getState()`, `getUuid()`
+  - State checking: `isActive()` method
+  - Magic methods: direct property access via `$connection->NAME`
+  - String representation and array conversion
+  - Individual connection control methods: `up()`, `down()`, `modify()`, `delete()`, `clone()`
+  - Export functionality: `export($filename)` per connection
+  - Data refresh: `refresh()` method to update connection data
+
+### Changed
+- `getConnections()` now returns array of `Connection` objects instead of raw arrays
+- Enhanced object-oriented API while maintaining backward compatibility
+- Improved error handling and method documentation
+
+### Backward Compatibility
+- Added `getConnectionsData()` method for users who need raw array data
+- All existing `Nmcli` class methods continue to work unchanged
+- Legacy workflows using array access remain functional
+
 ## [1.0.0] - 2025-10-01
 
 ### Added

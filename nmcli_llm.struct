@@ -1,0 +1,285 @@
+# NMCLI PHP Package Structure for LLM Understanding
+# Generated: 2025-10-02
+# Purpose: Complete API reference for AI assistants to understand available functions
+
+## PACKAGE OVERVIEW
+- Name: tandrezone/nmcli-php
+- Purpose: Object-oriented PHP wrapper for NetworkManager's nmcli command
+- Architecture: Pure object-oriented (no legacy array methods)
+- Dependencies: PHP 7.4+, NetworkManager/nmcli system tool
+
+## MAIN CLASSES
+
+### 1. Nmcli (Main Controller Class)
+**Namespace**: Tandrezone\NmcliPhp\Nmcli
+**Purpose**: Primary interface to NetworkManager operations
+**Constructor**: new Nmcli($useSudo = true)
+
+#### Connection Management Methods:
+- getConnections(): Connection[] - Returns array of Connection objects
+- getConnection($name): Connection|null - Get specific connection by name
+- show($connection = null): array - Get connection details as raw array
+- up($connection): bool - Bring connection up
+- down($connection): bool - Bring connection down
+- add($type, $name, $options = []): bool - Create new connection
+- modify($connection, $options = []): bool - Modify existing connection
+- clone($original, $new): bool - Clone connection with new name
+- edit($connection): string - Get interactive edit command
+- delete($connection): bool - Delete connection
+- monitor(): string - Get monitor command for watching changes
+- reload(): bool - Reload all connections
+- load($filename): bool - Load connection from file
+- import($type, $filename): bool - Import connection file
+- export($connection, $filename): bool - Export connection to file
+
+#### Device Management Methods:
+- getDevices(): Device[] - Returns array of Device objects
+- getDevice($name): Device|null - Get specific device by name
+- getDeviceDetails($device = null): array - Get device details as raw array
+- connectDevice($device, $connection = null): bool - Connect device
+- disconnectDevice($device): bool - Disconnect device
+
+#### WiFi Management Methods:
+- getWifiNetworks($device = null): WifiNetwork[] - Returns array of WifiNetwork objects
+- connectWifi($ssid, $password = null, $device = null): bool - Connect to WiFi
+- createHotspot($ssid, $password = null, $device = null): bool - Create WiFi hotspot
+
+#### Utility Methods:
+- getLastOutput(): array - Get last command output lines
+- getLastReturnCode(): int - Get last command exit code
+- setUseSudo($useSudo): void - Enable/disable sudo usage
+- isUsingSudo(): bool - Check if using sudo
+
+### 2. Connection (Connection Object Class)
+**Namespace**: Tandrezone\NmcliPhp\Connection
+**Purpose**: Represents individual network connections
+**Constructor**: new Connection($data, $nmcli) - Internal use only
+
+#### Property Access (Magic Methods):
+- $connection->NAME - Connection name
+- $connection->UUID - Unique identifier
+- $connection->TYPE - Connection type (wifi, ethernet, vpn, etc.)
+- $connection->DEVICE - Associated device name
+- $connection->STATE - Current state (activated, connected, etc.)
+- isset($connection->PROPERTY) - Check if property exists
+
+#### Information Methods:
+- getName(): string - Get connection name
+- getUuid(): string - Get UUID
+- getType(): string - Get connection type
+- getDevice(): string - Get associated device
+- getState(): string - Get current state
+- isActive(): bool - Check if connection is active/connected
+- get($key): mixed - Get specific property value
+- has($key): bool - Check if property exists
+
+#### Control Methods:
+- up(): bool - Bring connection up
+- down(): bool - Take connection down
+- modify($options): bool - Modify connection settings
+  * $options can be array like ['ipv4.method' => 'manual', 'ipv4.addresses' => '192.168.1.100/24']
+- delete(): bool - Delete this connection
+- clone($newName): bool - Clone connection with new name
+- export($filename): bool - Export connection to file
+
+#### Information & Utilities:
+- show(): array - Get detailed connection information
+- refresh(): void - Refresh connection data from nmcli
+- getEditCommand(): string - Get interactive edit command
+- toArray(): array - Convert to array representation
+- __toString(): string - String representation
+
+### 3. Device (Device Object Class)
+**Namespace**: Tandrezone\NmcliPhp\Device
+**Purpose**: Represents network devices (WiFi adapters, Ethernet interfaces, etc.)
+**Constructor**: new Device($data, $nmcli) - Internal use only
+
+#### Property Access (Magic Methods):
+- $device->DEVICE - Device name (e.g., 'wlp2s0', 'eth0')
+- $device->TYPE - Device type ('wifi', 'ethernet', 'loopback', etc.)
+- $device->STATE - Device state ('connected', 'disconnected', 'unavailable', etc.)
+- $device->CONNECTION - Active connection name or '--' if none
+- isset($device->PROPERTY) - Check if property exists
+
+#### Information Methods:
+- getName(): string - Get device name
+- getType(): string - Get device type
+- getState(): string - Get current state
+- getConnection(): string - Get active connection name
+- isConnected(): bool - Check if device is connected
+- isAvailable(): bool - Check if device is available for use
+- isWifi(): bool - Check if device is WiFi adapter
+- isEthernet(): bool - Check if device is Ethernet interface
+- get($key): mixed - Get specific property value
+- has($key): bool - Check if property exists
+
+#### Control Methods:
+- connect($networkName, $password = null): bool - Connect to network
+- disconnect(): bool - Disconnect device
+
+#### WiFi-Specific Methods (WiFi devices only):
+- getWifiNetworks(): WifiNetwork[] - Get available WiFi networks for this device
+
+#### Utilities:
+- toArray(): array - Convert to array representation
+- __toString(): string - String representation
+
+### 4. WifiNetwork (WiFi Network Object Class)
+**Namespace**: Tandrezone\NmcliPhp\WifiNetwork
+**Purpose**: Represents discovered WiFi networks with signal analysis
+**Constructor**: new WifiNetwork($data, $nmcli, $device) - Internal use only
+
+#### Property Access (Magic Methods):
+- $network->SSID - Network name/identifier
+- $network->BSSID - MAC address of access point
+- $network->MODE - Network mode ('Infra', 'Ad-Hoc')
+- $network->CHAN - WiFi channel number
+- $network->FREQ - Frequency in MHz
+- $network->RATE - Maximum data rate
+- $network->SIGNAL - Signal strength (0-100)
+- $network->BARS - Signal bars representation
+- $network->SECURITY - Security type ('WPA2', 'WEP', '--', etc.)
+- $network->CC - Country code
+- isset($network->PROPERTY) - Check if property exists
+
+#### Information Methods:
+- getSsid(): string - Get network name
+- getBssid(): string - Get access point MAC address
+- getSignal(): int - Get signal strength percentage
+- getChannel(): string - Get WiFi channel
+- getFrequency(): string - Get frequency
+- getSecurity(): string - Get security type
+- get($key): mixed - Get specific property value
+- has($key): bool - Check if property exists
+
+#### Signal Analysis Methods:
+- getSignalQuality(): string - Get quality description ('Excellent', 'Good', 'Fair', 'Poor', 'Weak', 'Very Weak')
+- hasStrongSignal(): bool - Check if signal >= 70%
+- hasGoodSignal(): bool - Check if signal >= 50%
+- hasWeakSignal(): bool - Check if signal < 30%
+
+#### Security Analysis Methods:
+- isSecured(): bool - Check if network requires password
+- isOpen(): bool - Check if network is open (no password)
+- isWpa(): bool - Check if using WPA/WPA2 security
+- isWep(): bool - Check if using WEP security
+
+#### Connection Methods:
+- connect($password = null): bool - Connect to this WiFi network
+
+#### Utilities:
+- toArray(): array - Convert to array representation
+- __toString(): string - String representation
+
+### 5. NmcliException (Exception Class)
+**Namespace**: Tandrezone\NmcliPhp\NmcliException
+**Purpose**: Custom exception for nmcli command failures
+**Extends**: \Exception
+
+## USAGE PATTERNS
+
+### Basic Object-Oriented Workflow:
+```php
+$nmcli = new Nmcli();
+
+// Get all connections as objects
+$connections = $nmcli->getConnections();
+foreach ($connections as $connection) {
+    echo $connection->NAME . " is " . $connection->STATE . "\n";
+    if (!$connection->isActive()) {
+        $connection->up();
+    }
+}
+
+// Get all devices as objects
+$devices = $nmcli->getDevices();
+foreach ($devices as $device) {
+    if ($device->isWifi() && $device->STATE === 'disconnected') {
+        $device->connect('MyWiFiNetwork');
+    }
+}
+
+// Get WiFi networks as objects
+$wifiNetworks = $nmcli->getWifiNetworks();
+foreach ($wifiNetworks as $network) {
+    if ($network->hasStrongSignal() && $network->SSID === 'HomeWiFi') {
+        $network->connect('password123');
+    }
+}
+```
+
+### Connection Management:
+```php
+// Create new connection
+$nmcli->add('wifi', 'MyConnection', [
+    'ifname' => 'wlan0',
+    'ssid' => 'MyWiFi',
+    'password' => 'mypassword'
+]);
+
+// Modify connection
+$connection = $nmcli->getConnection('MyConnection');
+$connection->modify(['ipv4.method' => 'manual', 'ipv4.addresses' => '192.168.1.100/24']);
+
+// Control connections
+$connection->up();
+$connection->down();
+$connection->delete();
+```
+
+### Device Operations:
+```php
+// Find WiFi devices
+$devices = $nmcli->getDevices();
+$wifiDevices = array_filter($devices, fn($d) => $d->isWifi());
+
+// Connect device to network
+foreach ($wifiDevices as $device) {
+    if ($device->STATE === 'disconnected') {
+        $device->connect('MyNetwork');
+    }
+}
+```
+
+### WiFi Network Analysis:
+```php
+$networks = $nmcli->getWifiNetworks();
+
+// Find strongest signal
+$strongest = null;
+$maxSignal = 0;
+foreach ($networks as $network) {
+    if ($network->SIGNAL > $maxSignal) {
+        $maxSignal = $network->SIGNAL;
+        $strongest = $network;
+    }
+}
+
+// Filter by security
+$openNetworks = array_filter($networks, fn($n) => $n->isOpen());
+$securedNetworks = array_filter($networks, fn($n) => $n->isSecured());
+```
+
+## ERROR HANDLING
+- All methods that can fail throw NmcliException
+- Use try-catch blocks around nmcli operations
+- Check $nmcli->getLastReturnCode() for command exit codes
+- Use $nmcli->getLastOutput() for raw command output
+
+## SYSTEM REQUIREMENTS
+- nmcli command must be available in system PATH
+- NetworkManager service must be running
+- Appropriate permissions for network operations (sudo may be required)
+- PHP 7.4+ with exec() function enabled
+
+## NOTES FOR LLM USAGE
+1. All methods return objects, no legacy array methods exist
+2. Magic property access ($obj->PROPERTY) available on all object classes
+3. All object classes have __toString() and toArray() methods
+4. Boolean methods (isActive(), isWifi(), etc.) return true/false
+5. Network operations may require sudo privileges
+6. Exception handling is essential for robust code
+7. Signal strength is always 0-100 percentage
+8. Connection states: 'activated', 'connected', 'disconnected', etc.
+9. Device types: 'wifi', 'ethernet', 'loopback', 'bridge', etc.
+10. Security types: 'WPA2', 'WPA3', 'WEP', '--' (open), etc.
