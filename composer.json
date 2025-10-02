@@ -1,6 +1,6 @@
 {
     "name": "tandrezone/nmcli-php",
-    "version": "1.0.0-dev",
+    "version": "1.1.0-dev",
     "description": "A comprehensive PHP wrapper for NetworkManager's nmcli command-line tool",
     "type": "library",
     "keywords": [
